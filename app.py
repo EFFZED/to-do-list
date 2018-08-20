@@ -14,11 +14,15 @@ def get_task():
 def del_task(name):
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-    try:
-        task = name
-        r.delete('task', task)
-    except Exception as err:
-        return print("Error: %s" %err)
+    # new, can delete a single element that client pass in.
+    r.hdel('task', name)
+
+    # old, can't delete single element in keys, it's delete all.
+    # try:
+    #     task = name
+    #     r.delete('task', task)
+    # except Exception as err:
+    #     return print("Error: %s" %err)
 
 def set_task(name, content):
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
@@ -67,8 +71,9 @@ while True:
     
     elif checked == 2:
         delete_task = str(input("\nWhat task you want to Delete?: "))
-        result = del_task(delete_task)
-        print(result)
+        # result = del_task(delete_task)
+        # print(result)
+        del_task(delete_task)
 
     elif checked == 3:
         print("\nProgram has stopped. \n")
