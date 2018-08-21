@@ -1,72 +1,72 @@
+#from/import
 import redis
 
+#identifier
 data = {}
+i = True
+r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-def get_task():
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
-
-    try:
-        tasks = r.hgetall('task')
-        return tasks
-    except Exception as err:
-        print("Error: %s" % err)
-
-def del_task(name):
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
-
-    try:
-        r.hdel('task', name)
-    except Exception as err:
-        print("Error: %s" %err)
-
-def set_task(name, content):
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
-
-    if (len(name) <= 0) or (name == " "):
+#function
+def set_task(task_name, task_content):
+    if (task_name and task_content) == "" or (task_name and task_content) == " ":
         pass
-    elif (len(content) <= 0) or (content == " "):
-        pass
-    else:
-        data.update({name: content})
-
+    else:    
+        data.update({task_name: task_content})
     try:
         r.hmset('task', data)
     except Exception as err:
         print("Error: %s" % err)
 
+def get_task():
+    num = 1
 
+    try:
+        tasks = r.hgetall('task')
+    except Exception as err:
+        print("Error: %s" % err)
 
-while True:
-    task = get_task()
-    print("========== All Tasks ========== \n")
-    if task:
-        for k, v in task.items():
-            #Remove b'bytes' symbol.
-            task_name = k.decode("utf-8")
-            task_content = v.decode("utf-8")
-
-            print("Task name: \"%s\" " % task_name)
-            print("Your: \"%s\" plan is: \"%s\" \n" % (task_name, task_content))
+    print("\n========== All Task ==========")
+    if tasks:
+        for k, v in tasks.items():
+            print(num, ") Task Name: %s" % k.decode("utf-8"))
+            print(num, ") Task Plan: %s" % v.decode("utf-8"))
+            num += 1
     else:
-        print("No task. \n")
-    print("=============================== \n")
+        print("No Task.")
+    print("==============================\n")
 
-    print("(Add Task Press \"1\")  :  (Delete Task Press \"2\")  :  (Stop Program Press \"3\")")
-    checked = int(input("Press: "))
+def del_task(delete_name):
+    try:
+        r.hdel('task', delete_name)
+        print("Deleted: %s" % delete_name)
+    except Exception as err:
+        print("Error: %s" % err)
 
-    if (checked == 1):
-        print("\n===> Suggestion: If you don't want to add more task. Please press \"Enter\" <=== ")
-        task_name = str(input("Task name: "))
-        task_content = str(input("What's your plan?: "))
-        set_task(task_name, task_content)
-        if task_name == "" or task_content == "":
-            print("\nProgram has stopped. \n")
+#UI
+get_task()
+
+print("(Add Task Press: \"1\")   :   (Delete Task Press: \"2\")")
+print("===> Suggestion: If you want to stop add more task. Please press \"Enter\" <===")
+checked = int(input("Press: "))
+
+while i == True:
+    if checked == 1:
+        task_name = str(input("Enter task name: "))
+        task_content = str(input("What's your plan: "))
+
+        if (task_name and task_content) == "" or (task_name and task_content) == " ":
+            get_task()
+            print("Program has Stopped! \n")
             break
-        
-    elif checked == 2:
-        delete_task = str(input("\nWhat task you want to Delete?: "))
-        del_task(delete_task)
 
-    elif checked == 3:
-        print("\nProgram has stopped. \n")
+        set_task(task_name, task_content)
+    
+    elif checked == 2:
+        delete_name = str(input("Enter task name that you want to delete: "))
+        del_task(delete_name)
+        break
+
+    else:
+        print("\nPlease press \"1\" or \"2\"")
+        print("Program has Stopped!\n")
         break
